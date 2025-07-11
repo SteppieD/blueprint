@@ -4,6 +4,9 @@ import { useState } from 'react'
 import FileUpload from '@/components/FileUpload'
 import MaterialSelector from '@/components/MaterialSelector'
 import ResultsDisplay from '@/components/ResultsDisplay'
+import DonationButton from '@/components/DonationButton'
+import UsageTracker, { useTrackUsage } from '@/components/UsageTracker'
+import PricingSection from '@/components/PricingSection'
 import { AnalysisResult } from '@/types/analysis'
 
 export default function Home() {
@@ -13,6 +16,7 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState(0)
   const [progressMessage, setProgressMessage] = useState('')
+  const { incrementUsage, checkLimit } = useTrackUsage()
 
   const handleFileUpload = (uploadedFile: File) => {
     setFile(uploadedFile)
@@ -25,6 +29,13 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     if (!file || selectedMaterials.length === 0) return
+
+    // Check usage limit
+    if (checkLimit()) {
+      alert('You\'ve reached your free analysis limit. Please upgrade to Pro for unlimited analyses!')
+      window.location.href = '#pricing'
+      return
+    }
 
     setIsAnalyzing(true)
     setAnalysisProgress(0)
@@ -87,6 +98,18 @@ export default function Home() {
         setAnalysisResult(data)
         setIsAnalyzing(false)
         setProgressMessage('Analysis complete!')
+        
+        // Track usage
+        const { limitReached, remaining } = incrementUsage()
+        if (limitReached) {
+          setTimeout(() => {
+            alert('That was your last free analysis! Upgrade to Pro for unlimited analyses.')
+          }, 2000)
+        } else if (remaining === 1) {
+          setTimeout(() => {
+            alert('Only 1 free analysis remaining this month!')
+          }, 2000)
+        }
       }
     } catch (error) {
       console.error('Analysis error:', error)
@@ -98,6 +121,9 @@ export default function Home() {
 
   return (
     <>
+      <UsageTracker />
+      <DonationButton />
+      
       {/* Hero Section */}
       <section className="hero-bg min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Floating geometric shapes */}
@@ -124,10 +150,10 @@ export default function Home() {
           
           <div className="slide-up stagger-2 flex flex-col sm:flex-row gap-6 justify-center items-center">
             <a href="#calculator" className="btn-primary text-lg">
-              Start Calculating 🚀
+              Start Free Trial 🚀
             </a>
-            <a href="#how-it-works" className="btn-secondary text-lg">
-              See How It Works
+            <a href="#pricing" className="btn-secondary text-lg">
+              View Pricing
             </a>
           </div>
           
@@ -146,13 +172,13 @@ export default function Home() {
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-purple-600 mb-2">💰</div>
-                  <div className="text-2xl font-bold text-gray-800">$1000s</div>
-                  <div className="text-gray-600">Cost Savings</div>
+                  <div className="text-2xl font-bold text-gray-800">$0</div>
+                  <div className="text-gray-600">Free to Start</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-purple-600 mb-2">📊</div>
-                  <div className="text-2xl font-bold text-gray-800">10+</div>
-                  <div className="text-gray-600">Material Types</div>
+                  <div className="text-2xl font-bold text-gray-800">1000+</div>
+                  <div className="text-gray-600">Happy Users</div>
                 </div>
               </div>
             </div>
@@ -321,6 +347,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Pricing Section */}
+      <PricingSection />
     </>
   )
 }

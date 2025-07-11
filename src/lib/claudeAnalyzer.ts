@@ -1,9 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { extractConstructionData } from './pdfProcessor'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-})
+// OpenRouter configuration
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY || ''
+const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 export interface BlueprintAnalysis {
   totalSqFt: number
@@ -49,18 +48,26 @@ export async function analyzeBlueprint(pdfText: string): Promise<BlueprintAnalys
   const extractedData = extractConstructionData(pdfText)
   
   // For development/testing without API key, return extracted data
-  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'sk-ant-api03-xxx') {
-    console.warn('Using extracted data only - no Claude API key configured')
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'sk-ant-api03-xxx') {
+    console.warn('Using extracted data only - no AI API key configured')
     return convertExtractedToAnalysis(extractedData)
   }
   
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
-      max_tokens: 4000,
-      messages: [{
-        role: 'user',
-        content: `You are a construction blueprint analyzer. Analyze this blueprint text and extract detailed information.
+    // Use OpenRouter API
+    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://blueprint-analyzer.vercel.app',
+        'X-Title': 'Blueprint Material Analyzer'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3-haiku-20240307', // Using Haiku for cost efficiency
+        messages: [{
+          role: 'user',
+          content: `You are a construction blueprint analyzer. Analyze this blueprint text and extract detailed information.
 
 Blueprint text:
 ${pdfText}
@@ -111,21 +118,31 @@ Return the data in this exact JSON format:
   "confidence": number (0-1),
   "notes": [string]
 }`
-      }]
+        }],
+        max_tokens: 4000,
+        temperature: 0.3 // Lower temperature for more consistent results
+      })
     })
     
-    const content = response.content[0]
-    if (content.type === 'text') {
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(`OpenRouter API error: ${error.error?.message || 'Unknown error'}`)
+    }
+    
+    const data = await response.json()
+    const content = data.choices[0]?.message?.content
+    
+    if (content) {
       // Extract JSON from the response
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/)
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0])
       }
     }
     
-    throw new Error('Failed to parse Claude response')
+    throw new Error('Failed to parse AI response')
   } catch (error) {
-    console.error('Claude API error:', error)
+    console.error('OpenRouter API error:', error)
     // Fallback to extracted data
     return convertExtractedToAnalysis(extractedData)
   }

@@ -5,7 +5,8 @@ export async function GET() {
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: {
-      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      hasAIKey: !!process.env.OPENROUTER_API_KEY || !!process.env.ANTHROPIC_API_KEY,
+      aiProvider: process.env.OPENROUTER_API_KEY ? 'OpenRouter' : (process.env.ANTHROPIC_API_KEY ? 'Anthropic' : 'None'),
       hasRedis: !!process.env.REDIS_URL,
       hasS3: !!process.env.AWS_ACCESS_KEY_ID,
       useLocalStorage: process.env.USE_LOCAL_STORAGE === 'true'

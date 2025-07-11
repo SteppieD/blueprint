@@ -143,8 +143,8 @@ export default function Home() {
           
           <div className="slide-up stagger-1">
             <p className="text-xl md:text-2xl text-white text-opacity-90 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Revolutionary AI-powered blueprint analysis that calculates lumber, plywood, and material quantities 
-              in seconds. Save hours of manual calculations and get accurate cost estimates instantly.
+              Revolutionary AI-powered blueprint analysis that calculates lumber, concrete, drywall, paint, 
+              insulation, and all construction materials in seconds. Save hours of manual calculations.
             </p>
           </div>
           
@@ -182,6 +182,53 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Material Categories Section */}
+      <section id="materials" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold gradient-text mb-6">
+              Comprehensive Material Calculations
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              From foundation to finish, we calculate every material you need for your construction project
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {[
+              { icon: '🪵', name: 'Lumber & Framing', desc: '2x4, 2x6 studs, plywood, OSB', link: '/cost-estimators/lumber' },
+              { icon: '🧱', name: 'Concrete & Masonry', desc: 'Ready-mix, bags, rebar, blocks', link: '/cost-estimators/concrete' },
+              { icon: '📋', name: 'Drywall & Finishing', desc: 'Sheets, compound, tape, texture', link: '/cost-estimators/drywall' },
+              { icon: '🎨', name: 'Paint & Finishes', desc: 'Interior, exterior, primer, stain', link: '/cost-estimators/paint' },
+              { icon: '🛡️', name: 'Insulation', desc: 'Fiberglass, spray foam, rigid', link: '/cost-estimators/insulation' },
+              { icon: '🏠', name: 'Roofing', desc: 'Shingles, underlayment, flashing', link: '/cost-estimators/roofing' },
+              { icon: '🏗️', name: 'Siding & Exterior', desc: 'Vinyl, wood, fiber cement', link: '/cost-estimators/siding' },
+              { icon: '🔌', name: 'Electrical', desc: 'Wire, outlets, switches, panels', link: '/cost-estimators/electrical' },
+              { icon: '🚿', name: 'Plumbing', desc: 'Pipes, fittings, fixtures', link: '/cost-estimators/plumbing' },
+              { icon: '🪟', name: 'Flooring', desc: 'Hardwood, tile, carpet, vinyl', link: '/cost-estimators/flooring' },
+              { icon: '🔨', name: 'Project Estimators', desc: 'Full renovation calculators', link: '/project-estimators/basement-renovation' },
+              { icon: '📍', name: 'Local Pricing', desc: 'Regional cost adjustments', link: '/pricing/on/toronto' }
+            ].map((category, index) => (
+              <a 
+                key={index} 
+                href={category.link}
+                className="glass-card rounded-xl p-6 text-center hover:scale-105 transition-all duration-300 hover:shadow-2xl group"
+              >
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{category.icon}</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">{category.name}</h3>
+                <p className="text-sm text-gray-600">{category.desc}</p>
+              </a>
+            ))}
+          </div>
+          
+          <div className="mt-12 text-center">
+            <a href="/cost-estimators/lumber" className="btn-secondary text-lg">
+              Explore All Calculators →
+            </a>
           </div>
         </div>
       </section>
@@ -302,7 +349,7 @@ export default function Home() {
               </div>
               <h4 className="text-2xl font-bold text-white mb-4">Instant Calculations</h4>
               <p className="text-white text-opacity-80 leading-relaxed">
-                Professional-grade algorithms calculate exact material quantities based on industry standards and construction best practices.
+                Professional-grade algorithms calculate lumber, concrete, drywall, paint, and 30+ material types based on industry standards.
               </p>
             </div>
             
@@ -331,12 +378,12 @@ export default function Home() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { icon: '🎯', title: 'Precision Accuracy', desc: '99%+ accurate calculations based on industry standards' },
+              { icon: '🎯', title: '30+ Materials', desc: 'Calculate lumber, concrete, drywall, paint, insulation, and more' },
               { icon: '⚡', title: 'Lightning Fast', desc: 'Get results in under 30 seconds, not hours' },
-              { icon: '📊', title: 'Detailed Reports', desc: 'Comprehensive breakdowns with current market pricing' },
-              { icon: '💰', title: 'Cost Optimization', desc: 'Save thousands on material costs with smart calculations' },
-              { icon: '📱', title: 'Mobile Ready', desc: 'Works perfectly on desktop, tablet, and mobile devices' },
-              { icon: '🔒', title: 'Secure & Private', desc: 'Your blueprints and data are completely secure' }
+              { icon: '📊', title: 'Canadian Pricing', desc: 'Regional pricing for Vancouver, Toronto, Calgary, and more' },
+              { icon: '💰', title: 'Waste Factors', desc: 'Built-in waste calculations for accurate material ordering' },
+              { icon: '📱', title: 'Project Estimators', desc: 'Complete renovation calculators for kitchens, basements, and more' },
+              { icon: '🔒', title: 'SEO Powerhouse', desc: 'Thousands of material calculators at your fingertips' }
             ].map((feature, index) => (
               <div key={index} className="glass-card rounded-2xl p-8 text-center card-hover">
                 <div className="text-5xl mb-6">{feature.icon}</div>

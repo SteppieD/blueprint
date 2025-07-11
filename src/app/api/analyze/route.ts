@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyzePDF } from '@/lib/pdfAnalyzer'
-import { calculateMaterials } from '@/lib/materialCalculator'
-import { getCurrentPrices } from '@/lib/pricingService'
+import { uploadFile, validateFile } from '@/lib/storage'
+import { queueAnalysis } from '@/lib/jobQueue'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,53 +16,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Extract text and project info from PDF
-    const pdfAnalysis = await analyzePDF(buffer)
-    
-    // Calculate material quantities based on project info
-    const quantities = calculateMaterials(pdfAnalysis, materials)
-    
-    // Get current prices
-    const prices = await getCurrentPrices(materials)
-    
-    // Combine quantities with prices
-    const materialItems = quantities.map(item => {
-      const price = prices[item.id] || 0
-      return {
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-        unitPrice: price,
-        totalCost: item.quantity * price
-      }
-    })
-
-    // Calculate summary
-    const subtotal = materialItems.reduce((sum, item) => sum + item.totalCost, 0)
-    const taxRate = 0.12 // 12% tax (GST + PST in BC)
-    const tax = subtotal * taxRate
-    const total = subtotal + tax
-
-    const result = {
-      projectInfo: pdfAnalysis.projectInfo,
-      materials: materialItems,
-      summary: {
-        subtotal,
-        taxRate,
-        tax,
-        total
-      }
+    // Validate file
+    const validation = validateFile(file)
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json(result)
+    // Convert file to buffer and upload
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const filePath = await uploadFile(buffer, file.name)
+
+    // Generate session ID for tracking
+    const sessionId = crypto.randomBytes(16).toString('hex')
+
+    // Queue the analysis job
+    const jobId = await queueAnalysis(filePath, materials, sessionId)
+
+    return NextResponse.json({
+      jobId,
+      sessionId,
+      message: 'Analysis started. Poll /api/analyze/status for results.',
+      estimatedTime: 30 // seconds
+    })
   } catch (error) {
     console.error('Analysis error:', error)
     return NextResponse.json(
-      { error: 'Failed to analyze blueprint' },
+      { error: 'Failed to start analysis' },
       { status: 500 }
     )
   }

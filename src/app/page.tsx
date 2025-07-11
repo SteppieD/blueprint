@@ -11,6 +11,8 @@ export default function Home() {
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [progressMessage, setProgressMessage] = useState('')
 
   const handleFileUpload = (uploadedFile: File) => {
     setFile(uploadedFile)
@@ -25,6 +27,8 @@ export default function Home() {
     if (!file || selectedMaterials.length === 0) return
 
     setIsAnalyzing(true)
+    setAnalysisProgress(0)
+    setProgressMessage('Starting analysis...')
     
     try {
       const formData = new FormData()
@@ -40,13 +44,42 @@ export default function Home() {
         throw new Error('Analysis failed')
       }
 
-      const result = await response.json()
-      setAnalysisResult(result)
+      const { jobId } = await response.json()
+      
+      // Poll for results
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`/api/analyze/status/${jobId}`)
+          const status = await statusResponse.json()
+          
+          if (status.progress) {
+            setAnalysisProgress(status.progress.progress)
+            setProgressMessage(status.progress.message)
+          }
+          
+          if (status.status === 'completed') {
+            clearInterval(pollInterval)
+            setAnalysisResult(status.result)
+            setIsAnalyzing(false)
+            setProgressMessage('Analysis complete!')
+          } else if (status.status === 'failed') {
+            clearInterval(pollInterval)
+            alert(status.error || 'Analysis failed. Please try again.')
+            setIsAnalyzing(false)
+            setProgressMessage('')
+          }
+        } catch (error) {
+          console.error('Poll error:', error)
+          clearInterval(pollInterval)
+          setIsAnalyzing(false)
+          setProgressMessage('')
+        }
+      }, 1000)
     } catch (error) {
       console.error('Analysis error:', error)
       alert('Failed to analyze blueprint. Please try again.')
-    } finally {
       setIsAnalyzing(false)
+      setProgressMessage('')
     }
   }
 
@@ -167,9 +200,19 @@ export default function Home() {
               }`}
             >
               {isAnalyzing ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
-                  Analyzing Blueprint...
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center mb-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
+                    {progressMessage || 'Analyzing Blueprint...'}
+                  </div>
+                  {analysisProgress > 0 && (
+                    <div className="w-full bg-white bg-opacity-20 rounded-full h-2">
+                      <div 
+                        className="bg-white rounded-full h-2 transition-all duration-300"
+                        style={{ width: `${analysisProgress}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center">

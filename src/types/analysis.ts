@@ -23,4 +23,10 @@ export interface AnalysisResult {
     tax: number
     total: number
   }
+  metadata?: {
+    analysisDate: string
+    confidence: number
+    notes: string[]
+    pdfPageCount?: number
+  }
 }

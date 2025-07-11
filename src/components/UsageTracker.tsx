@@ -27,17 +27,25 @@ export default function UsageTracker() {
         data.used = 0
         data.lastReset = now.toISOString()
       }
-      setUsage(data)
+      setUsage({
+        used: data.used,
+        limit: data.limit,
+        plan: data.plan as 'free' | 'pro' | 'business'
+      })
     } else {
       // Initialize
-      const initialData = {
+      const initialData: UsageData & { lastReset: string } = {
         used: 0,
         limit: 3,
-        plan: 'free',
+        plan: 'free' as const,
         lastReset: new Date().toISOString()
       }
       localStorage.setItem('analysisUsage', JSON.stringify(initialData))
-      setUsage(initialData)
+      setUsage({
+        used: initialData.used,
+        limit: initialData.limit,
+        plan: initialData.plan
+      })
     }
   }, [])
 

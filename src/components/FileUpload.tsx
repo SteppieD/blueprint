@@ -44,44 +44,67 @@ export default function FileUpload({ onFileUpload }: FileUploadProps) {
 
   return (
     <div
-      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+      className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 group cursor-pointer ${
         isDragging 
-          ? 'border-blue-500 bg-blue-50' 
-          : 'border-gray-300 hover:border-gray-400'
+          ? 'border-purple-400 bg-purple-50 scale-105' 
+          : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <svg
-        className="mx-auto h-12 w-12 text-gray-400"
-        stroke="currentColor"
-        fill="none"
-        viewBox="0 0 48 48"
-        aria-hidden="true"
-      >
-        <path
-          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+      
+      {/* Upload icon */}
+      <div className="relative z-10">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-r from-purple-100 to-pink-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <svg
+            className="w-10 h-10 text-purple-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+        </div>
+        
+        <h3 className="text-xl font-semibold text-gray-800 mb-3">
+          Drop your blueprint here
+        </h3>
+        
+        <p className="text-gray-600 mb-4">
+          <label htmlFor="file-upload" className="cursor-pointer font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+            Click to browse files
+          </label>
+          {' '}or drag and drop your PDF
+        </p>
+        
+        <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+          <div className="flex items-center">
+            <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+            PDF files only
+          </div>
+          <div className="flex items-center">
+            <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+            Up to 50MB
+          </div>
+        </div>
+        
+        <input
+          id="file-upload"
+          name="file-upload"
+          type="file"
+          className="sr-only"
+          accept=".pdf"
+          onChange={handleFileSelect}
         />
-      </svg>
-      <p className="mt-2 text-sm text-gray-600">
-        <label htmlFor="file-upload" className="cursor-pointer font-medium text-blue-600 hover:text-blue-500">
-          Click to upload
-        </label>
-        {' '}or drag and drop
-      </p>
-      <p className="text-xs text-gray-500 mt-1">PDF files only (up to 50MB)</p>
-      <input
-        id="file-upload"
-        name="file-upload"
-        type="file"
-        className="sr-only"
-        accept=".pdf"
-        onChange={handleFileSelect}
-      />
+      </div>
     </div>
   )
 }

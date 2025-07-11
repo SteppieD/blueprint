@@ -6,10 +6,15 @@
   "framework": "nextjs",
   "functions": {
     "src/app/api/analyze/route.ts": {
-      "maxDuration": 30
+      "maxDuration": 10
+    },
+    "src/app/api/analyze/vercel/route.ts": {
+      "maxDuration": 10
     }
   },
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "USE_LOCAL_STORAGE": "true",
+    "MAX_FILE_SIZE": "4718592"
   }
 }

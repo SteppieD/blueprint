@@ -35,7 +35,12 @@ export default function Home() {
       formData.append('file', file)
       formData.append('materials', JSON.stringify(selectedMaterials))
 
-      const response = await fetch('/api/analyze', {
+      // Use Vercel-optimized endpoint in production
+      const endpoint = process.env.NEXT_PUBLIC_VERCEL_URL 
+        ? '/api/analyze/vercel'
+        : '/api/analyze'
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       })
@@ -44,37 +49,45 @@ export default function Home() {
         throw new Error('Analysis failed')
       }
 
-      const { jobId } = await response.json()
+      const data = await response.json()
       
-      // Poll for results
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusResponse = await fetch(`/api/analyze/status/${jobId}`)
-          const status = await statusResponse.json()
-          
-          if (status.progress) {
-            setAnalysisProgress(status.progress.progress)
-            setProgressMessage(status.progress.message)
-          }
-          
-          if (status.status === 'completed') {
+      // Check if it's a job response or direct result
+      if (data.jobId) {
+        // Development mode with job queue
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusResponse = await fetch(`/api/analyze/status/${data.jobId}`)
+            const status = await statusResponse.json()
+            
+            if (status.progress) {
+              setAnalysisProgress(status.progress.progress)
+              setProgressMessage(status.progress.message)
+            }
+            
+            if (status.status === 'completed') {
+              clearInterval(pollInterval)
+              setAnalysisResult(status.result)
+              setIsAnalyzing(false)
+              setProgressMessage('Analysis complete!')
+            } else if (status.status === 'failed') {
+              clearInterval(pollInterval)
+              alert(status.error || 'Analysis failed. Please try again.')
+              setIsAnalyzing(false)
+              setProgressMessage('')
+            }
+          } catch (error) {
+            console.error('Poll error:', error)
             clearInterval(pollInterval)
-            setAnalysisResult(status.result)
-            setIsAnalyzing(false)
-            setProgressMessage('Analysis complete!')
-          } else if (status.status === 'failed') {
-            clearInterval(pollInterval)
-            alert(status.error || 'Analysis failed. Please try again.')
             setIsAnalyzing(false)
             setProgressMessage('')
           }
-        } catch (error) {
-          console.error('Poll error:', error)
-          clearInterval(pollInterval)
-          setIsAnalyzing(false)
-          setProgressMessage('')
-        }
-      }, 1000)
+        }, 1000)
+      } else {
+        // Vercel mode - direct result
+        setAnalysisResult(data)
+        setIsAnalyzing(false)
+        setProgressMessage('Analysis complete!')
+      }
     } catch (error) {
       console.error('Analysis error:', error)
       alert('Failed to analyze blueprint. Please try again.')
@@ -168,6 +181,11 @@ export default function Home() {
                 <h3 className="text-2xl font-bold text-gray-800">Upload Your Blueprint</h3>
               </div>
               <FileUpload onFileUpload={handleFileUpload} />
+              {process.env.NEXT_PUBLIC_VERCEL_URL && (
+                <p className="text-sm text-gray-600 mt-4">
+                  <span className="font-semibold">Note:</span> On Vercel, max file size is 4.5MB and analysis is simplified.
+                </p>
+              )}
               {file && (
                 <div className="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
                   <div className="flex items-center">

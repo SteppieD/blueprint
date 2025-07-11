@@ -32,7 +32,7 @@ export default function RootLayout({
             </div>
           </div>
         </nav>
-        <main className="min-h-screen bg-gray-50">
+        <main className="min-h-screen" style={{backgroundColor: '#f9fafb'}}>
           {children}
         </main>
         <footer className="bg-gray-800 text-white py-8 mt-20">

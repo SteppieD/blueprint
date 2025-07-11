@@ -13,7 +13,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^24.0.13",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19.1.8",
@@ -24,7 +23,7 @@
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
   }
 }

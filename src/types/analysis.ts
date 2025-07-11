@@ -7,6 +7,7 @@ export interface MaterialItem {
 }
 
 export interface ProjectInfo {
+  name?: string
   totalSqFt: number
   floors: number
   basementSqFt?: number

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         materials: costAnalysis.breakdown.map(item => ({
           name: item.name,
           quantity: item.quantity,
-          unit: materials.find(m => item.name.toLowerCase().includes(m.toLowerCase()))?.includes('studs') ? 'pieces' : 'sheets',
+          unit: materials.find((m: string) => item.name.toLowerCase().includes(m.toLowerCase()))?.includes('studs') ? 'pieces' : 'sheets',
           unitPrice: item.unitPrice,
           totalCost: item.total
         })),
